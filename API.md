@@ -13,23 +13,11 @@
 
 - Response:
 
-Code: `200`
-
-```json
-{ "id": "123456" }
-```
-
-Code: `500`
-
-```json
-{ "error": "请重试" }
-```
-
-Code: `503`
-
-```json
-{ "error": "可用实例较少" }
-```
+|Code|Body|
+|---|---|
+|200|`{ "id": "123456" }`|
+|500|`{ "error": "请重试" }`|
+|503|`{ "error": "可用实例较少" }`|
 
 ### POST `/api/instance/save`
 
@@ -45,17 +33,10 @@ Code: `503`
 
 - Response:
 
-Code: `200`
-
-```json
-{ "id": "123456" }
-```
-
-Code: `404`
-
-```json
-{ "error": "没有该实例或密码错误" }
-```
+|Code|Body|
+|---|---|
+|200|`{ "id": "123456" }`|
+|404|`{ "error": "没有该实例或密码错误" }`|
 
 ### POST `/api/instance/pull`
 
@@ -70,17 +51,10 @@ Code: `404`
 
 - Response:
 
-Code: `200`
-
-```json
-{ "text": "TEXT" }
-```
-
-Code: `404`
-
-```json
-{ "error": "没有该实例或密码错误" }
-```
+|Code|Body|
+|---|---|
+|200|`{ "text": "TEXT" }`|
+|404|`{ "error": "没有该实例或密码错误" }`|
 
 ### POST `/api/instance/destroy`
 
@@ -95,33 +69,18 @@ Code: `404`
 
 - Response:
 
-Code: `200`
-
-```json
-{ "id": "123456" }
-```
-
-Code: `404`
-
-```json
-{ "error": "没有该实例或密码错误" }
-```
+|Code|Body|
+|---|---|
+|200|`{ "id": "123456" }`|
+|404|`{ "error": "没有该实例或密码错误" }`|
 
 ### 请求Json缺少参数
 
 - Response:
 
-Code: `422`
-
-```json
-{ "error": "请求json参数(id)缺失或类型不正确" }
-```
-```json
-{ "error": "请求json参数(id,text)缺失或类型不正确" }
-```
-```json
-{ "error": "请求json参数(id,text,password)缺失或类型不正确" }
-```
-```
-......
-```
+|Code|Body|
+|---|---|
+|422|`{ "error": "请求json参数(id)缺失或类型不正确" }`|
+||`{ "error": "请求json参数(id,text)缺失或类型不正确" }`|
+||`{ "error": "请求json参数(id,text,password)缺失或类型不正确" }`|
+||`......`|
