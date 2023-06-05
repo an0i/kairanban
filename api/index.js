@@ -1,26 +1,44 @@
-import express from 'express';
-import cors from 'cors';
 import { Redis } from '@upstash/redis';
+import cors from 'cors';
+import express from 'express';
 
 function genRandomIdNum(min = 100000, max = 1000000) {
   // 不包括最大值，包括最小值
   return Math.floor(Math.random() * (Math.floor(max) - Math.ceil(min)) + Math.ceil(min));
 }
 
-const redis = Redis.fromEnv({ automaticDeserialization: false }); // Env
-// const redis = new Redis({ url: 'https://xxxxxxxx.upstash.io', token: 'xxxxxxxx', automaticDeserialization: false, }); // Manual
+function checkBody(needs) {
+  return (req, res, next) => {
+    const miss = [];
+    needs.forEach((need) => {
+      if (typeof req.body[need] !== 'string') {
+        miss.push(need);
+      }
+    });
+    if (miss.length === 0) {
+      next();
+    } else {
+      res.status(422).send({ error: `请求json参数(${miss.join(',')})缺失或类型不正确` });
+    }
+  };
+}
 
-const keyPrefix = 'kairanban-';
+const redis = new Redis({
+  url: process.env.UPSTASH_REDIS_REST_URL,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN,
+  automaticDeserialization: false,
+});
 
-class Instance {
+export class Instance {
   constructor(id, text, passoword) {
     this.id = id;
     this.text = text;
     this.password = passoword;
+    this.keyPrefix = 'kairanban-';
   }
 
   get key() {
-    return keyPrefix + this.id;
+    return this.keyPrefix + this.id;
   }
 
   create() {
@@ -42,36 +60,18 @@ class Instance {
 }
 
 const app = express();
-app.use(cors({ origin: [/^https?:\/\/kai-web\.vercel\.app$/] }));
-app.use(express.json());
 
-function checkBody(needs) {
-  return (req, res, next) => {
-    const miss = [];
-    needs.forEach((need) => {
-      if (typeof req.body[need] !== 'string') {
-        miss.push(need);
-      }
-    });
-    if (miss.length === 0) {
-      next();
-    } else {
-      res.status(422).send({ error: `请求json参数(${miss.join(',')})缺失或类型不正确` });
-    }
-  };
-}
+app.use(cors({ origin: [/^https?:\/\/kai-web\.vercel\.app$/] }));
+
+app.use(express.json());
 
 app.post('/api/instance/create', checkBody(['text', 'password']), async (req, res) => {
   const randomId = genRandomIdNum().toString();
   const instance = new Instance(randomId, req.body.text, req.body.password);
-  if ((await redis.dbsize()) <= 123756) {
-    if (await instance.create() === 1) {
-      res.send({ id: instance.id });
-    } else {
-      res.status(500).send({ error: '请重试' });
-    }
+  if (await instance.create() === 1) {
+    res.send({ id: instance.id });
   } else {
-    res.status(503).send({ error: '可用实例较少' });
+    res.status(500).send({ error: '请重试' });
   }
 });
 
@@ -102,7 +102,4 @@ app.post('/api/instance/destroy', checkBody(['id', 'password']), async (req, res
   }
 });
 
-// app.listen(3000, () => {
-//   console.log('Example app listening on port 3000');
-// });
 export default app;
